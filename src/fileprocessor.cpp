@@ -24,9 +24,10 @@ void FileProcessor::setSettings(const QString &inputMask, const QString &outputP
 void FileProcessor::processFiles()
 {
     stopped = false;
-    
+
     QFileInfo const maskInfo(inputMask);
-    QDir const inputDir(inputMask);
+    QDir const inputDir(maskInfo.path());
+
     QStringList const files = inputDir.entryList({maskInfo.fileName()}, QDir::Files);
     if (files.isEmpty()) {
         emit finished();
@@ -41,12 +42,15 @@ void FileProcessor::processFiles()
     
     connect(watcher, &QFutureWatcher<void>::progressValueChanged, this, &FileProcessor::progressChanged);
     
-    QFuture<void> future = QtConcurrent::map(files, [this](const QString &file) {
+    auto filesPtr = QSharedPointer<QStringList>::create(files);
+    QFuture<void> future = QtConcurrent::map(*filesPtr, [this, filesPtr](const QString &file) {
+
         if (stopped) return;
-        
-        QString inputPath = QFileInfo(inputMask).path() + "/" + file;
-        QString outputFile = this->outputPath + "/" + file;
-        
+
+        QString inputPath = QDir(QFileInfo(inputMask).path()).filePath(file);
+        QString outputFile = QDir(QFileInfo(outputPath).absoluteFilePath()).filePath(file);
+
+        qWarning() << outputFile;
         if (!overwrite) {
             outputFile = getUniqueFilename(outputFile);
         }

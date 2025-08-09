@@ -52,7 +52,7 @@ void MainWindow::on_startButton_clicked()
     }
     
     QVector<quint8> xorKey;
-    QStringList bytes = ui->xorKeyEdit->text().split(' ', Qt::SkipEmptyParts);
+    const QStringList bytes = ui->xorKeyEdit->text().split(' ', Qt::SkipEmptyParts);
     for (const QString &byte : std::as_const(bytes)) {
         bool ok;
         quint8 value = byte.toUInt(&ok, 16);
