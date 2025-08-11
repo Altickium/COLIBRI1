@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>450</height>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -109,11 +109,11 @@
          </item>
          <item>
           <widget class="QLabel" name="intervalLabel">
-           <property name="text">
-            <string>Interval (seconds):</string>
-           </property>
            <property name="enabled">
             <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Interval (seconds):</string>
            </property>
           </widget>
          </item>
@@ -173,25 +173,15 @@
          </item>
          <item>
           <widget class="QPushButton" name="stopButton">
-           <property name="text">
-            <string>Stop</string>
-           </property>
            <property name="enabled">
             <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Stop</string>
            </property>
           </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QProgressBar" name="progressBar">
-         <property name="value">
-          <number>0</number>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -220,7 +210,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>21</height>
+     <height>18</height>
     </rect>
    </property>
   </widget>

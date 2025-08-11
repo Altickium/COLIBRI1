@@ -16,7 +16,6 @@ public:
     void stopProcessing();
 
 signals:
-    void progressChanged(int value);
     void finished();
     void fileProcessed(QString filename);
     void errorOccurred(QString message);

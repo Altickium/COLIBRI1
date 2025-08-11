@@ -12,8 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     
     processor = new FileProcessor(this);
     timer = new QTimer(this);
-    
-    connect(processor, &FileProcessor::progressChanged, this, &MainWindow::updateProgress);
+
     connect(processor, &FileProcessor::finished, this, &MainWindow::processingFinished);
     connect(processor, &FileProcessor::fileProcessed, this, &MainWindow::fileProcessed);
     connect(timer, &QTimer::timeout, this, [this]() { processor->processFiles(); });
@@ -76,7 +75,6 @@ void MainWindow::on_startButton_clicked()
     
     ui->startButton->setEnabled(false);
     ui->stopButton->setEnabled(true);
-    ui->progressBar->setValue(0);
     
     if (!ui->timerCheckBox->isChecked()) {
         processor->processFiles();
@@ -92,12 +90,6 @@ void MainWindow::on_stopButton_clicked()
     ui->startButton->setEnabled(true);
     ui->stopButton->setEnabled(false);
 }
-
-void MainWindow::updateProgress(int value)
-{
-    ui->progressBar->setValue(value);
-}
-
 void MainWindow::processingFinished()
 {
     timer->stop();

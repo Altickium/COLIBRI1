@@ -22,7 +22,6 @@ private slots:
     void on_browseOutputButton_clicked();
     void on_startButton_clicked();
     void on_stopButton_clicked();
-    void updateProgress(int value);
     void processingFinished();
     void fileProcessed(QString filename);
     void on_timerCheckBox_stateChanged(int state);

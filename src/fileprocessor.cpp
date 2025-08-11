@@ -40,8 +40,6 @@ void FileProcessor::processFiles()
         emit finished();
     });
     
-    connect(watcher, &QFutureWatcher<void>::progressValueChanged, this, &FileProcessor::progressChanged);
-    
     auto filesPtr = QSharedPointer<QStringList>::create(files);
     QFuture<void> future = QtConcurrent::map(*filesPtr, [this, filesPtr](const QString &file) {
 
@@ -89,52 +87,58 @@ QString FileProcessor::getUniqueFilename(const QString &path) const
     return newPath;
 }
 
-bool FileProcessor::processFile(const QString &inputPath, const QString &outputPath)
+bool FileProcessor::processFile(const QString& inputPath, const QString& outputPath)
 {
     QFile inputFile(inputPath);
     if (!inputFile.open(QIODevice::ReadOnly)) {
         emit errorOccurred("Cannot open input file: " + inputPath);
         return false;
     }
-    
-    QFile outputFile(outputPath);
-    if (!outputFile.open(QIODevice::WriteOnly)) {
+
+    QString tempPath = outputPath + ".tmp";
+    QFile tempFile(tempPath);
+    if (!tempFile.open(QIODevice::WriteOnly)) {
         inputFile.close();
-        emit errorOccurred("Cannot create output file: " + outputPath);
+        emit errorOccurred("Cannot create temp file: " + tempPath);
         return false;
     }
-    
-    const qint64 bufferSize = 1024 * 1024; // 1MB buffer
-    QByteArray buffer;
-    buffer.resize(bufferSize);
-    
-    qint64 totalBytes = inputFile.size();
-    qint64 bytesProcessed = 0;
-    
+
+    const qint64 bufferSize = 1 * 1024 * 1024; // 1MB buffer
+    QByteArray buffer(bufferSize, '\0');
+
     while (!inputFile.atEnd() && !stopped) {
         qint64 bytesRead = inputFile.read(buffer.data(), buffer.size());
         if (bytesRead == -1) {
             emit errorOccurred("Error reading file: " + inputPath);
-            break;
+            tempFile.remove();
+            return false;
         }
-        
-        // Perform XOR operation
+
         for (qint64 i = 0; i < bytesRead; ++i) {
             buffer[i] = buffer[i] ^ xorKey[i % 8];
         }
-        
-        if (outputFile.write(buffer.constData(), bytesRead) == -1) {
-            emit errorOccurred("Error writing to file: " + outputPath);
-            break;
+
+        if (tempFile.write(buffer.constData(), bytesRead) == -1) {
+            emit errorOccurred("Error writing to temp file: " + tempPath);
+            tempFile.remove();
+            return false;
         }
-        
-        bytesProcessed += bytesRead;
-        int progress = static_cast<int>((bytesProcessed * 100) / totalBytes);
-        emit progressChanged(progress);
     }
-    
+
     inputFile.close();
-    outputFile.close();
-    
-    return !stopped && (bytesProcessed == totalBytes);
+    tempFile.close();
+
+    if (stopped) {
+        QFile::remove(tempPath);
+        return false;
+    }
+
+    QFile::remove(outputPath);
+    if (!QFile::rename(tempPath, outputPath)) {
+        emit errorOccurred("Cannot replace output file: " + outputPath);
+        QFile::remove(tempPath);
+        return false;
+    }
+
+    return true;
 }
